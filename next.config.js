@@ -6,6 +6,9 @@ const backendUrl = process.env.BACKEND_URL ||
 
 const nextConfig = {
   images: { remotePatterns: [] },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production'
+  },
   async rewrites() {
     return [
       { source: '/api/:path*',     destination: `${backendUrl}/api/:path*`     },

@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@import url('https://api.fontshare.com/v2/css?f[]=clash-grotesk@200,300,400,500,600&display=swap');
+@source "./app/**/*.{js,jsx}";
+@source "./components/**/*.{js,jsx}";
 
 :root {
   --bg:       #060606;
@@ -17,7 +18,6 @@
   --accent-hi:#e5d9c0;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
 body {
