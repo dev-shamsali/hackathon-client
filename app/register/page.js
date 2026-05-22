@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Upload, ChevronLeft, ArrowRight, Check, Loader2, Copy } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Check, Loader2, Copy } from 'lucide-react';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
 import Logo from '@/components/Logo';
 
-const STEPS = ['Team', 'Project', 'Documents'];
+const STEPS = ['Team', 'Project'];
 
 export default function RegisterPage() {
   const [step, setStep] = useState(0);
@@ -17,8 +17,7 @@ export default function RegisterPage() {
   const [copied, setCopied] = useState(false);
   const [form, setForm] = useState({
     teamName: '', leaderName: '', email: '', members: '',
-    institute: '', projectTitle: '', problemStatement: '', techStack: '',
-    prd: null, trd: null
+    institute: '', projectTitle: '', problemStatement: '', techStack: ''
   });
 
   const u = (f, v) => setForm(p => ({ ...p, [f]: v }));
@@ -29,24 +28,23 @@ export default function RegisterPage() {
         return toast.error('Please fill all required fields');
       if (!/^\S+@\S+\.\S+$/.test(form.email)) return toast.error('Invalid email');
     }
-    if (step === 1) {
-      if (!form.projectTitle || !form.problemStatement || !form.techStack)
-        return toast.error('Please fill all required fields');
-    }
     setStep(s => s + 1);
   };
 
   const submit = async () => {
+    if (!form.projectTitle || !form.problemStatement || !form.techStack)
+      return toast.error('Please fill all required fields');
     setLoading(true);
     try {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        if (k !== 'prd' && k !== 'trd' && v) fd.append(k, v);
-      });
-      if (form.prd) fd.append('prd', form.prd);
-      if (form.trd) fd.append('trd', form.trd);
-      const { data } = await api.post('/teams/register', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const { data } = await api.post('/teams/register', {
+        teamName: form.teamName,
+        leaderName: form.leaderName,
+        email: form.email,
+        members: form.members,
+        institute: form.institute,
+        projectTitle: form.projectTitle,
+        problemStatement: form.problemStatement,
+        techStack: form.techStack
       });
       setTeamInfo(data.team);
     } catch (err) {
@@ -201,24 +199,13 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {step === 2 && (
-                <div className="space-y-4">
-                  <SectionHead title="Documents" sub="Optional — Improves evaluation depth" />
-                  <FileField label="PRD Document" file={form.prd} set={f => u('prd', f)} />
-                  <FileField label="TRD Document" file={form.trd} set={f => u('trd', f)} />
-                  <p className="text-xs" style={{ color: 'var(--cream-35)' }}>
-                    Accepted formats: PDF, DOC, DOCX — max 10 MB per file.
-                  </p>
-                </div>
-              )}
-
               <div className="flex gap-3 mt-7">
                 {step > 0 && (
                   <button className="btn-ghost flex-1" onClick={() => setStep(s => s - 1)}>
                     Back
                   </button>
                 )}
-                {step < 2 ? (
+                {step < 1 ? (
                   <motion.button whileTap={{ scale: 0.99 }} onClick={next}
                     className="btn-primary flex-1">
                     Continue <ArrowRight size={14} strokeWidth={2} />
@@ -254,37 +241,6 @@ function Field({ label, ph, val, set, type = 'text' }) {
     <div>
       <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--cream-60)' }}>{label}</label>
       <input type={type} placeholder={ph} value={val} onChange={e => set(e.target.value)} className="field" />
-    </div>
-  );
-}
-
-function FileField({ label, file, set }) {
-  return (
-    <div>
-      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--cream-60)' }}>{label}</label>
-      <label className="flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-all"
-        style={{
-          background: 'var(--surface)',
-          border: `1px dashed ${file ? 'rgba(242,234,216,0.22)' : 'rgba(242,234,216,0.1)'}`,
-        }}>
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: file ? 'var(--cream)' : 'var(--hover)', border: file ? 'none' : '1px solid var(--line-md)' }}>
-          <Upload size={13} strokeWidth={2} style={{ color: file ? 'var(--bg)' : 'var(--cream-35)' }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm truncate" style={{ color: file ? 'var(--cream-60)' : 'var(--cream-35)' }}>
-            {file ? file.name : 'Click to upload'}
-          </p>
-        </div>
-        {file && (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: 'var(--cream)' }}>
-            <Check size={10} strokeWidth={3} style={{ color: 'var(--bg)' }} />
-          </div>
-        )}
-        <input type="file" accept=".pdf,.doc,.docx" className="hidden"
-          onChange={e => set(e.target.files?.[0] || null)} />
-      </label>
     </div>
   );
 }
