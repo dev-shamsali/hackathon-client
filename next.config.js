@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const backendUrl = process.env.BACKEND_URL ||
   (process.env.NODE_ENV === 'production'
-    ? 'http://api-hackathon.nexcorealliance.com'
+    ? 'https://api-hackathon.nexcorealliance.com'
     : 'http://localhost:5000');
 
 const nextConfig = {
